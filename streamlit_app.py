@@ -105,18 +105,25 @@ retriever_1 = vectorstore_1.as_retriever(search_type="similarity", search_kwargs
 
 
 # Create the first tool
+# tool1 = create_retriever_tool(
+#     retriever_1, 
+#      "search_car_dealership_inventory",
+#      "This tool is used when answering questions related to car inventory.\
+#       Searches and returns documents regarding the car inventory. Input to this can be multi string.\
+#       The primary input for this function consists of either the car's make and model, whether it's new or used car, and trade-in.\
+#       You should know the make of the car, the model of the car, and whether the customer is looking for a new or used car to answer inventory-related queries.\
+#       When responding to inquiries about any car, restrict the information shared with the customer to the car's make, year, model, and trim.\
+#       The selling price should only be disclosed upon the customer's request, without any prior provision of MRP.\
+#       If the customer inquires about a car that is not available, please refrain from suggesting other cars.\
+#       Provide a link for more details after every car information given."
+# )
 tool1 = create_retriever_tool(
     retriever_1, 
-     "search_car_dealership_inventory",
-     "This tool is used when answering questions related to car inventory.\
-      Searches and returns documents regarding the car inventory. Input to this can be multi string.\
-      The primary input for this function consists of either the car's make and model, whether it's new or used car, and trade-in.\
-      You should know the make of the car, the model of the car, and whether the customer is looking for a new or used car to answer inventory-related queries.\
-      When responding to inquiries about any car, restrict the information shared with the customer to the car's make, year, model, and trim.\
-      The selling price should only be disclosed upon the customer's request, without any prior provision of MRP.\
-      If the customer inquires about a car that is not available, please refrain from suggesting other cars.\
-      Provide a link for more details after every car information given."
-)
+     "search_car_model_make",
+     "This tool is used only when you know model of the car or features of the car for example good mileage car, toeing car,\
+     pickup truck or and new or used car and \
+      Searches and returns documents regarding the car details. Input to this should be the car's model or car features and new or used car as a single argument"
+) 
 
 
 # Create the third tool
@@ -148,23 +155,27 @@ if 'user_name' not in st.session_state:
 llm = ChatOpenAI(model="gpt-4", temperature = 0)
 langchain.debug=True
 memory_key = "history"
-memory = AgentTokenBufferMemory(memory_key=memory_key, llm=llm)
 template = """You are an costumer care support at car dealership responsible for handling inquiries related to 
-car inventory, business details and appointment scheduling. 
+car inventory, business details and appointment scheduling.
 To ensure a consistent and effective response, please adhere to the following guidelines:
 
 Car Inventory Inquiries:
+In our dealership, we offer a wide selection of vehicles from various manufacturers, Now Our dealership has only 
+{available_makers} maker cars each designed to meet specific needs, including towing, off-road capabilities, good mileage,
+pickup trucks.
+If a customer inquires about our car inventory with features related to towing, off-road capability, good mileage, or pickup 
+trucks, there's no need to ask about the make and model of the car. Simply inquire whether they are interested in a new or
+used vehicle.
+
+
 Car Variety:
 Recognize that the dealership offers a wide variety of car makes.
 Understand that each make may have multiple models available in the inventory without knowing exact 
-model you should not give details. For example Jeep is a make and Jeep Cherokee, Jeep Wrangler, Jeep Grand Cherokee are models
-similarly Ram is a maker and Ram 1500
-Ram 2500
-Ram 3500
-Ram 4500
-Ram ProMaster
-are models.
-Please note that this provided data is solely for illustration purposes and should not be used to respond to customer queries.
+model you should not give details. 
+For example "Jeep is a make and Jeep Cherokee, Jeep Wrangler, Jeep Grand Cherokee are models
+similarly Ram is a maker and Ram 1500, Ram 2500 and Ram 3500 are models"
+Please note that the above provided make and model details of jeep and ram in double inverted coomas are solely for 
+illustration purposes and should not be used to respond customer queries.
 
 Identify Query Content:
 When customers make inquiries, carefully examine the content of their question.
@@ -238,13 +249,14 @@ Keep responses concise, not exceeding two sentences.
 """
 
 details= "Today's current date is "+ todays_date +" today's weekday is "+day_of_the_week+"."
+available_makers="Chrysler, Jeep, Ram"
 
 class PythonInputs(BaseModel):
     query: str = Field(description="code snippet to run")
 
 df = pd.read_csv("appointment_new.csv")
-input_template = template.format(dhead=df.head().to_markdown(),details=details)
-
+# input_template = template.format(dhead=df.head().to_markdown(),details=details)
+input_template = template.format(dhead=df.head().to_markdown(),details=details,available_makers=available_makers)
 system_message = SystemMessage(content=input_template)
 
 prompt = OpenAIFunctionsAgent.create_prompt(
