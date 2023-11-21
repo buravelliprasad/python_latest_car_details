@@ -1,4 +1,4 @@
-langchain_experimental
+langchain
 openai
 streamlit
 tiktoken
@@ -11,3 +11,4 @@ gspread
 pytz 
 airtable-python-wrapper
 tabulate
+langchain-experimental
