@@ -275,7 +275,7 @@ tools = [tool1, repl, tool3]
 agent = OpenAIFunctionsAgent(llm=llm, tools=tools, prompt=prompt)
 if 'agent_executor' not in st.session_state:
     agent_executor = AgentExecutor(agent=agent, tools=tools, memory=memory, verbose=True, return_source_documents=True,
-        return_generated_question=True, return_intermediate_steps=True)
+        return_generated_question=True)
     st.session_state.agent_executor = agent_executor
 else:
     agent_executor = st.session_state.agent_executor
