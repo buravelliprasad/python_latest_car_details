@@ -155,8 +155,10 @@ if 'user_name' not in st.session_state:
 
 llm = ChatOpenAI(model="gpt-4", temperature = 0)
 langchain.debug=True
-memory_key = "history"
-memory = AgentTokenBufferMemory(memory_key=memory_key, llm=llm)
+# memory_key = "history"
+# memory = AgentTokenBufferMemory(memory_key=memory_key, llm=llm)
+memory_key="chat_history"
+memory = ConversationBufferMemory(memory_key="chat_history", return_messages=True)
 template = """You are an costumer care support at car dealership responsible for handling inquiries related to 
 car inventory, business details and appointment scheduling.
 To ensure a consistent and effective response, please adhere to the following guidelines:
